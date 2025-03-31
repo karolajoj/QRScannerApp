@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.example.qrscannerapp"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.example.qrscannerapp"
