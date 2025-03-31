@@ -30,8 +30,14 @@ import java.io.OutputStream
 import java.net.Socket
 import android.content.pm.ActivityInfo
 import androidx.activity.result.contract.ActivityResultContracts
+import android.content.Context
+import android.content.SharedPreferences
+import androidx.core.content.edit
 
 class MainActivity : ComponentActivity() {
+    private lateinit var sharedPreferences: SharedPreferences
+    private var ipAddress by mutableStateOf("")
+
     private val qrScannerLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
@@ -43,18 +49,28 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-    private var ipAddress by mutableStateOf("192.168.177.43") // Domyślne IP
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+
+        // Inicjalizacja SharedPreferences
+        sharedPreferences = getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+        ipAddress = sharedPreferences.getString("saved_ip", "192.168.0.0") ?: "192.168.0.0"
+
         setContent {
             QRScannerScreen(
                 onScanClick = { scanQRCode() },
-                onIpChange = { ipAddress = it },
+                onIpChange = {
+                    ipAddress = it
+                    saveIpAddress(it) // Zapisujemy IP po każdej zmianie
+                },
                 ipAddress = ipAddress
             )
         }
+    }
+
+    private fun saveIpAddress(ip: String) {
+        sharedPreferences.edit() { putString("saved_ip", ip) }
     }
 
     private fun scanQRCode() {
